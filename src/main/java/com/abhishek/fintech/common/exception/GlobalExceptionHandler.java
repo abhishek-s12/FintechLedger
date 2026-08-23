@@ -80,6 +80,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
 
+    @ExceptionHandler(com.abhishek.fintech.wallet.exception.WalletNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleWalletNotFoundException(
+            com.abhishek.fintech.wallet.exception.WalletNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Wallet Not Found");
+        problemDetail.setType(URI.create(BASE_ERROR_URL + "wallet-not-found"));
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", Instant.now());
+        problemDetail.setProperty("traceId", UUID.randomUUID().toString());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
+
+    @ExceptionHandler(com.abhishek.fintech.wallet.exception.InvalidWalletStateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidWalletStateException(
+            com.abhishek.fintech.wallet.exception.InvalidWalletStateException ex,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problemDetail.setTitle("Invalid Wallet State");
+        problemDetail.setType(URI.create(BASE_ERROR_URL + "invalid-wallet-state"));
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", Instant.now());
+        problemDetail.setProperty("traceId", UUID.randomUUID().toString());
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problemDetail);
+    }
+
     @ExceptionHandler({InvalidCredentialsException.class, BadCredentialsException.class})
     public ResponseEntity<ProblemDetail> handleAuthenticationException(
             Exception ex,
