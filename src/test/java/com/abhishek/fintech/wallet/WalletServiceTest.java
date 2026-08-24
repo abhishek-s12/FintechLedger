@@ -44,6 +44,9 @@ class WalletServiceTest {
     @Mock
     private com.abhishek.fintech.ledger.service.LedgerService ledgerService;
 
+    @Mock
+    private com.abhishek.fintech.outbox.service.OutboxService outboxService;
+
     @InjectMocks
     private WalletService walletService;
 

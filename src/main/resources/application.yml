@@ -65,11 +65,21 @@ security:
     secret-key: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     expiration-time: ${JWT_EXPIRATION_MS:86400000} # 24 Hours
 
-# Rate Limiting Settings
-rate-limit:
-  capacity: ${RATE_LIMIT_CAPACITY:100}
-  refill-tokens: ${RATE_LIMIT_TOKENS_PER_MINUTE:100}
-  refill-duration-minutes: 1
+# Fintech Specific Settings (Outbox & Rate Limiting)
+fintech:
+  outbox:
+    poll-interval-ms: ${OUTBOX_POLL_INTERVAL_MS:2000}
+  ratelimit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    default-capacity: ${RATE_LIMIT_DEFAULT_CAPACITY:100}
+    default-refill-tokens: ${RATE_LIMIT_DEFAULT_TOKENS:100}
+    default-refill-period-seconds: 60
+    payment-capacity: ${RATE_LIMIT_PAYMENT_CAPACITY:30}
+    payment-refill-tokens: ${RATE_LIMIT_PAYMENT_TOKENS:30}
+    payment-refill-period-seconds: 60
+    auth-capacity: ${RATE_LIMIT_AUTH_CAPACITY:15}
+    auth-refill-tokens: ${RATE_LIMIT_AUTH_TOKENS:15}
+    auth-refill-period-seconds: 60
 
 # SpringDoc OpenAPI Documentation
 springdoc:

@@ -49,6 +49,9 @@ class AuthControllerTest {
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @MockBean
+    private com.abhishek.fintech.ratelimit.RateLimitFilter rateLimitFilter;
+
     @Test
     void shouldRegisterSuccessfully() throws Exception {
         RegisterRequest request = RegisterRequest.builder()

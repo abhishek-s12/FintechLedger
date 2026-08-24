@@ -44,6 +44,7 @@ public class PaymentService {
     private final com.abhishek.fintech.user.repository.UserRepository userRepository;
     private final LedgerService ledgerService;
     private final IdempotencyService idempotencyService;
+    private final com.abhishek.fintech.outbox.service.OutboxService outboxService;
     private final ObjectMapper objectMapper;
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
@@ -179,6 +180,25 @@ public class PaymentService {
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
+
+        // 8. Record Outbox Event for reliable Kafka message publishing
+        com.abhishek.fintech.messaging.event.PaymentCompletedEvent completedEvent =
+                com.abhishek.fintech.messaging.event.PaymentCompletedEvent.builder()
+                        .eventId("EVT-" + UUID.randomUUID().toString().substring(0, 18).toUpperCase())
+                        .eventType("PAYMENT_COMPLETED")
+                        .paymentId(savedPayment.getId())
+                        .referenceId(paymentRefId)
+                        .senderWalletId(fromId)
+                        .receiverWalletId(toId)
+                        .senderUserId(senderWallet.getUser().getId())
+                        .receiverUserId(receiverWallet.getUser().getId())
+                        .amount(transferAmount)
+                        .currency(requestCurrency)
+                        .timestamp(savedPayment.getCreatedAt())
+                        .build();
+
+        outboxService.saveEvent("PAYMENT", savedPayment.getId().toString(), "PAYMENT_COMPLETED", completedEvent);
+
         log.info("Processed payment transfer [{}]: {} {} from wallet [{}] to [{}]",
                 paymentRefId, transferAmount, requestCurrency, fromId, toId);
 

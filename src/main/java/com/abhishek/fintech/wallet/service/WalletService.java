@@ -32,6 +32,7 @@ public class WalletService {
     private final WalletRepository walletRepository;
     private final UserRepository userRepository;
     private final com.abhishek.fintech.ledger.service.LedgerService ledgerService;
+    private final com.abhishek.fintech.outbox.service.OutboxService outboxService;
 
     @Transactional
     public WalletResponse createWallet(UUID userId, CreateWalletRequest request) {
@@ -52,6 +53,19 @@ public class WalletService {
                 .build();
 
         Wallet savedWallet = walletRepository.save(wallet);
+
+        // Record WALLET_CREATED Outbox event
+        com.abhishek.fintech.messaging.event.WalletCreatedEvent createdEvent =
+                com.abhishek.fintech.messaging.event.WalletCreatedEvent.builder()
+                        .eventId("EVT-" + UUID.randomUUID().toString().substring(0, 18).toUpperCase())
+                        .eventType("WALLET_CREATED")
+                        .walletId(savedWallet.getId())
+                        .userId(userId)
+                        .currency(currency)
+                        .timestamp(savedWallet.getCreatedAt())
+                        .build();
+        outboxService.saveEvent("WALLET", savedWallet.getId().toString(), "WALLET_CREATED", createdEvent);
+
         log.info("Created new {} wallet with id: {} for user: {}", currency, savedWallet.getId(), userId);
 
         return mapToResponse(savedWallet);

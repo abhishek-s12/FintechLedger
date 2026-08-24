@@ -56,6 +56,9 @@ class PaymentServiceTest {
     @Mock
     private IdempotencyService idempotencyService;
 
+    @Mock
+    private com.abhishek.fintech.outbox.service.OutboxService outboxService;
+
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 

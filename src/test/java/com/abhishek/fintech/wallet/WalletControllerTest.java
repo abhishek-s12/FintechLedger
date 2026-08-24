@@ -61,6 +61,9 @@ class WalletControllerTest {
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @MockBean
+    private com.abhishek.fintech.ratelimit.RateLimitFilter rateLimitFilter;
+
     private SecurityUser testSecurityUser;
     private UUID userId;
     private UUID walletId;
