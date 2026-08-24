@@ -128,6 +128,88 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
     }
 
+    @ExceptionHandler(com.abhishek.fintech.payment.exception.InsufficientFundsException.class)
+    public ResponseEntity<ProblemDetail> handleInsufficientFundsException(
+            com.abhishek.fintech.payment.exception.InsufficientFundsException ex,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problemDetail.setTitle("Insufficient Funds");
+        problemDetail.setType(URI.create(BASE_ERROR_URL + "insufficient-funds"));
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", Instant.now());
+        problemDetail.setProperty("traceId", UUID.randomUUID().toString());
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problemDetail);
+    }
+
+    @ExceptionHandler(com.abhishek.fintech.payment.exception.PaymentNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handlePaymentNotFoundException(
+            com.abhishek.fintech.payment.exception.PaymentNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Payment Not Found");
+        problemDetail.setType(URI.create(BASE_ERROR_URL + "payment-not-found"));
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", Instant.now());
+        problemDetail.setProperty("traceId", UUID.randomUUID().toString());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
+
+    @ExceptionHandler({
+            com.abhishek.fintech.payment.exception.SelfTransferNotAllowedException.class,
+            com.abhishek.fintech.payment.exception.CurrencyMismatchException.class,
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<ProblemDetail> handleBadRequestExceptions(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle("Bad Request");
+        problemDetail.setType(URI.create(BASE_ERROR_URL + "bad-request"));
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", Instant.now());
+        problemDetail.setProperty("traceId", UUID.randomUUID().toString());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler(com.abhishek.fintech.idempotency.exception.IdempotencyConflictException.class)
+    public ResponseEntity<ProblemDetail> handleIdempotencyConflictException(
+            com.abhishek.fintech.idempotency.exception.IdempotencyConflictException ex,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problemDetail.setTitle("Idempotency Conflict");
+        problemDetail.setType(URI.create(BASE_ERROR_URL + "idempotency-conflict"));
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", Instant.now());
+        problemDetail.setProperty("traceId", UUID.randomUUID().toString());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
+    }
+
+    @ExceptionHandler(com.abhishek.fintech.ledger.exception.LedgerImbalanceException.class)
+    public ResponseEntity<ProblemDetail> handleLedgerImbalanceException(
+            com.abhishek.fintech.ledger.exception.LedgerImbalanceException ex,
+            HttpServletRequest request
+    ) {
+        String traceId = UUID.randomUUID().toString();
+        log.error("CRITICAL LEDGER IMBALANCE [traceId={}]: {}", traceId, ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        problemDetail.setTitle("Ledger Imbalance");
+        problemDetail.setType(URI.create(BASE_ERROR_URL + "ledger-imbalance"));
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", Instant.now());
+        problemDetail.setProperty("traceId", traceId);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ProblemDetail> handleAccessDeniedException(
             AccessDeniedException ex,

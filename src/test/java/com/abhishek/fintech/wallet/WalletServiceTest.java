@@ -41,6 +41,9 @@ class WalletServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private com.abhishek.fintech.ledger.service.LedgerService ledgerService;
+
     @InjectMocks
     private WalletService walletService;
 

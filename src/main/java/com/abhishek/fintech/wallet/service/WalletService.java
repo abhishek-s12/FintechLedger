@@ -31,6 +31,7 @@ public class WalletService {
 
     private final WalletRepository walletRepository;
     private final UserRepository userRepository;
+    private final com.abhishek.fintech.ledger.service.LedgerService ledgerService;
 
     @Transactional
     public WalletResponse createWallet(UUID userId, CreateWalletRequest request) {
@@ -96,6 +97,14 @@ public class WalletService {
         wallet.setBalance(wallet.getBalance().add(depositAmount));
 
         Wallet updatedWallet = walletRepository.save(wallet);
+
+        // Record deposit into ledger
+        String refId = "DEP-" + UUID.randomUUID().toString().substring(0, 18).toUpperCase();
+        String description = request.getDescription() != null && !request.getDescription().isBlank()
+                ? request.getDescription()
+                : "Deposit of " + depositAmount + " " + wallet.getCurrency();
+        ledgerService.recordDeposit(refId, description, updatedWallet, depositAmount, wallet.getCurrency());
+
         log.info("Deposited {} {} into wallet: {}", depositAmount, wallet.getCurrency(), walletId);
 
         return mapToResponse(updatedWallet);
